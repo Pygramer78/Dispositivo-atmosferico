@@ -1,1 +1,1 @@
-"# Dispositivo-atmosferico" 
+# Dispositivo-atmosferico
