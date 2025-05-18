@@ -110,46 +110,37 @@ void TSL2591_read(void) {
   Serial.println(tsl.calculateLux(full, ir), 6);
 }
 /*__/ BMP280 \________________*/
-void BMP280_readTemperature(bool delay = false; int time = 2000;) {
+void BMP280_readTemperature(void) {
   if (bmp.takeForcedMeasurement())  // Mira si el takeForcedMeasurement() => true o a 1
   {
-    /************************************/
     // leer temperatura
-    Serial.print(F("Temperature = "));    // Un serial print normal
-    Serial.print(bmp.readTemperature());  // Hace serial print de la función readTemperature()
-    Serial.println(" *C");                // otro serial print
-    /************************************/
+    Serial.print(F("Temperature = "));
+    Serial.print(bmp.readTemperature());
+    Serial.println(" *C");
   }
   else {
       // Mensaje de error
       Serial.println("Medición ha fallado!");
       while(true);
   }
-  if (delay) {
-      delay(time);
-  }
   
 }
 
-void BMP280_readPressure(bool delay = false; int time = 2000;) {
+void BMP280_readPressure(void) {
   if (bmp.takeForcedMeasurements()) {
-    /********************************/
     Serial.print(F("Pressure = "));
     Serial.print(bmp.readPressure());  // devuelve la presión atmósférica
     Serial.println(" Pa");
-    /********************************/
   }
   else {
     // Mensaje de error
     Serial.println("Medición ha fallado!");
     while(true);
   }
-  if (delay) {
-    delay(time);
-  }
+
 }
 
-void BMP280_readAltitude(bool delay = false; int time = 2000;) 
+void BMP280_readAltitude(void) 
 {
   if (bmp.takeForcedMeasurements)
   {
@@ -162,22 +153,19 @@ void BMP280_readAltitude(bool delay = false; int time = 2000;)
     Serial.println("Medición ha fallado!");
     while(true);
   }
-  if (delay) {
-    delay(time);
-  }
 }
 
 /*__/ AHT20 \________________*/
 float temperature = aht20.getTemperature();
 float humidity = aht20.getHumidity();
-void AHT20_readTemperature(bool delay = false; int time = 2000;) 
+void AHT20_readTemperature(void) 
 {
   Serial.print("T: "); // Mucho más fácil que usar el BMP280, pero quizás menos completo
   Serial.print(temperature, 2); // Simplemente escribe la temperatura
   Serial.print(" C\t H: ");
 }
 
-void AHT20_readHumidity(bool delay = false; int time = 2000;)
+void AHT20_readHumidity(void)
 {
   Serial.print("Humidity: ");
   Serial.print(humidity, 2);
@@ -188,12 +176,14 @@ void setup() {
   Serial.println("Iniciando...");
 
   // AHT20
+  /*
   Wire.begin();
   Serial.println(F("Buscando AHT20..."));
   if (aht20.begin() == false) {
     Serial.println("No se ha detectado ningún sensor AHT20. Congelando.");
     while (true);
   }
+  */
   // TODO función similar a TSL2591_displayDetails() para AHT20?
 
   // BMP280
@@ -216,6 +206,7 @@ void setup() {
                   Adafruit_BMP280::STANDBY_MS_500); /* Standby time. */
 
   // TSL2591
+  /*
   Serial.println(F("Buscando TSL2591..."));
   if (tsl.begin()) {
     Serial.println(F("Sensor TSL2591 encontrado."));
@@ -226,17 +217,19 @@ void setup() {
   }
   TSL2591_displayDetails();
   TSL2591_configure();
-
+  */
   // TODO MLX90615
 }
 
 void loop() {
   // AHT20
   // TODO convertir esto en una función AHT20_read()
+  /*
   temperature = aht20.getTemperature();  // Aunque ya hay un temperature en el bmp, este es más fácil de usar
   humidity = aht20.getHumidity();        // Este si o sí nos hace falta
   AHT20_readTemperature();
   AHT20_radHumidity();
+  */
   // Usando BMP280
   // TODO convertir esto en una función BMP280_read()
   // must call this to wake sensor up and get new measurement data
@@ -250,14 +243,8 @@ void loop() {
   BMP280_readAltitude();
   // Párrafo
   Serial.println();
-}
-else {
-  // Mensaje de error
-  Serial.println("Medición ha fallado!");
-}
-
 // TSL2591
-TSL2591_read();
+//TSL2591_read();
 
 // TODO Determinar delay adecuado
 delay(2000);
