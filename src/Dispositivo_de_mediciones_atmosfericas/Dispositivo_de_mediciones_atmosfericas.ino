@@ -109,68 +109,70 @@ void TSL2591_read(void) {
   Serial.print(F("Lux: "));
   Serial.println(tsl.calculateLux(full, ir), 6);
 }
+
+
 /*__/ BMP280 \________________*/
+
 void BMP280_readTemperature(void) {
-  if (bmp.takeForcedMeasurement())  // Mira si el takeForcedMeasurement() => true o a 1
+  if (bmp.takeForcedMeasurement())  // despertar al sensor
   {
     // leer temperatura
     Serial.print(F("Temperature = "));
     Serial.print(bmp.readTemperature());
     Serial.println(" *C");
+  } else {
+    // Mensaje de error
+    Serial.println("Medición ha fallado!");
+    while (true)
+      ;
   }
-  else {
-      // Mensaje de error
-      Serial.println("Medición ha fallado!");
-      while(true);
-  }
-  
 }
 
 void BMP280_readPressure(void) {
-  if (bmp.takeForcedMeasurements()) {
+  if (bmp.takeForcedMeasurement()) {  // despertar al sensor
     Serial.print(F("Pressure = "));
-    Serial.print(bmp.readPressure());  // devuelve la presión atmósférica
+    Serial.print(bmp.readPressure());
     Serial.println(" Pa");
-  }
-  else {
+  } else {
     // Mensaje de error
     Serial.println("Medición ha fallado!");
-    while(true);
+    while (true)
+      ;
   }
-
 }
 
-void BMP280_readAltitude(void) 
-{
-  if (bmp.takeForcedMeasurements)
-  {
+void BMP280_readAltitude(void) {
+  if (bmp.takeForcedMeasurement()) {
     Serial.print(F("Approx altitude = "));
-    Serial.print(bmp.readAltitude(1013.25)); /* Ajustado en tu pronóstico local! */
+    Serial.print(bmp.readAltitude(1013.25));  // TODO indicar valor actual en hPa a nivel del mar
     Serial.println(" m");
-  }
-  else {
+  } else {
     // Mensaje de error
     Serial.println("Medición ha fallado!");
-    while(true);
+    while (true)
+      ;
   }
 }
 
 /*__/ AHT20 \________________*/
-float temperature = aht20.getTemperature();
-float humidity = aht20.getHumidity();
-void AHT20_readTemperature(void) 
-{
-  Serial.print("T: "); // Mucho más fácil que usar el BMP280, pero quizás menos completo
-  Serial.print(temperature, 2); // Simplemente escribe la temperatura
-  Serial.print(" C\t H: ");
+
+void AHT20_readTemperature(void) {
+  float temperature = aht20.getTemperature();
+  Serial.print("T: ");
+  Serial.print(temperature, 2);
+  Serial.print(" *C");
 }
 
-void AHT20_readHumidity(void)
-{
+void AHT20_readHumidity(void) {
+  float humidity = aht20.getHumidity();
   Serial.print("Humidity: ");
   Serial.print(humidity, 2);
-  Serial.print(" % RH")
+  Serial.print(" %");
 }
+
+
+/*__/ Programa principal \________________*/
+
 void setup() {
   Serial.begin(9600);
   Serial.println("Iniciando...");
@@ -179,8 +181,10 @@ void setup() {
   /*
   Wire.begin();
   Serial.println(F("Buscando AHT20..."));
-  if (aht20.begin() == false) {
-    Serial.println("No se ha detectado ningún sensor AHT20. Congelando.");
+  if (aht20.begin()) {
+    Serial.println(F("AHT20 encontrado."));
+  } else {
+    Serial.println("AHT20 no encontrado. Congelando.");
     while (true);
   }
   */
@@ -189,29 +193,28 @@ void setup() {
   // BMP280
   Serial.println(F("Buscando BMP280..."));
   if (bmp.begin()) {
-    Serial.println(F("Sensor BMP280 encontrado."));
+    Serial.println(F("BMP280 encontrado."));
   } else {
-    Serial.println(F("No se ha detectado ningun sensor BMP280. Congelando."));
+    Serial.println(F("BMP280 no encontrado. Congelando."));
     while (true)
       ;
   }
 
-  /* Las configuraciones por defecto del datasheet*/
-  // Las he cogido del ejemplo bmp280_forced
-  // TODO revisar opciones (Sergio) y convertir esto en una función BMP280_configure(), como con TSL2591
-  bmp.setSampling(Adafruit_BMP280::MODE_FORCED,     /* Operating Mode. */
-                  Adafruit_BMP280::SAMPLING_X2,     /* Temp. oversampling */
-                  Adafruit_BMP280::SAMPLING_X16,    /* Pressure oversampling */
-                  Adafruit_BMP280::FILTER_X16,      /* Filtering. */
-                  Adafruit_BMP280::STANDBY_MS_500); /* Standby time. */
+  // TODO convertir esto en una función BMP280_configure(), como con TSL2591
+  // Valores basados en "Table 7. Use case: handheld device low-power" del datasheet del BMP280
+  bmp.setSampling(Adafruit_BMP280::MODE_FORCED,  /* Single measurement, then sleep */
+                  Adafruit_BMP280::SAMPLING_X2,  /* Temp. oversampling (eq. to 17-bit resolution, see Table 5) */
+                  Adafruit_BMP280::SAMPLING_X16, /* Pressure oversampling (eq to 20-bit resolution, see Table 4)*/
+                  Adafruit_BMP280::FILTER_X4);   /* IIR filtering */
+
 
   // TSL2591
   /*
   Serial.println(F("Buscando TSL2591..."));
   if (tsl.begin()) {
-    Serial.println(F("Sensor TSL2591 encontrado."));
+    Serial.println(F("TSL2591 encontrado."));
   } else {
-    Serial.println(F("No se ha detectado ningún sensor TSL2951. Congelando."));
+    Serial.println(F("TSL2951 no encontrado. Congelando."));
     while (true)
       ;
   }
@@ -225,27 +228,19 @@ void loop() {
   // AHT20
   // TODO convertir esto en una función AHT20_read()
   /*
-  temperature = aht20.getTemperature();  // Aunque ya hay un temperature en el bmp, este es más fácil de usar
-  humidity = aht20.getHumidity();        // Este si o sí nos hace falta
   AHT20_readTemperature();
   AHT20_radHumidity();
   */
-  // Usando BMP280
-  // TODO convertir esto en una función BMP280_read()
-  // must call this to wake sensor up and get new measurement data
-  // it blocks until measurement is complete
-  // can now print out the new measurements
-  // leer temperatura
-  BMP280_readTemperature();
-  // Leer Presión atmosférica
-  BMP280_readPressure();
-  // Leer altitud aproximada
-  BMP280_readAltitude();
-  // Párrafo
-  Serial.println();
-// TSL2591
-//TSL2591_read();
 
-// TODO Determinar delay adecuado
-delay(2000);
+  // BMP280
+  BMP280_readTemperature();
+  BMP280_readPressure();
+  BMP280_readAltitude();
+  Serial.println();
+
+  // TSL2591
+  //TSL2591_read();
+
+  // TODO Determinar delay adecuado
+  delay(2000);
 }
