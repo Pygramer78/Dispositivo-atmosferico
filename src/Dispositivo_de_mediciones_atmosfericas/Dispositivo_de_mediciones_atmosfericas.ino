@@ -109,8 +109,80 @@ void TSL2591_read(void) {
   Serial.print(F("Lux: "));
   Serial.println(tsl.calculateLux(full, ir), 6);
 }
+/*__/ BMP280 \________________*/
+void BMP280_readTemperature(bool delay = false; int time = 2000;) {
+  if (bmp.takeForcedMeasurement())  // Mira si el takeForcedMeasurement() => true o a 1
+  {
+    /************************************/
+    // leer temperatura
+    Serial.print(F("Temperature = "));    // Un serial print normal
+    Serial.print(bmp.readTemperature());  // Hace serial print de la función readTemperature()
+    Serial.println(" *C");                // otro serial print
+    /************************************/
+  }
+  else {
+      // Mensaje de error
+      Serial.println("Medición ha fallado!");
+      while(true);
+  }
+  if (delay) {
+      delay(time);
+  }
+  
+}
 
+void BMP280_readPressure(bool delay = false; int time = 2000;) {
+  if (bmp.takeForcedMeasurements()) {
+    /********************************/
+    Serial.print(F("Pressure = "));
+    Serial.print(bmp.readPressure());  // devuelve la presión atmósférica
+    Serial.println(" Pa");
+    /********************************/
+  }
+  else {
+    // Mensaje de error
+    Serial.println("Medición ha fallado!");
+    while(true);
+  }
+  if (delay) {
+    delay(time);
+  }
+}
 
+void BMP280_readAltitude(bool delay = false; int time = 2000;) 
+{
+  if (bmp.takeForcedMeasurements)
+  {
+    Serial.print(F("Approx altitude = "));
+    Serial.print(bmp.readAltitude(1013.25)); /* Ajustado en tu pronóstico local! */
+    Serial.println(" m");
+  }
+  else {
+    // Mensaje de error
+    Serial.println("Medición ha fallado!");
+    while(true);
+  }
+  if (delay) {
+    delay(time);
+  }
+}
+
+/*__/ AHT20 \________________*/
+float temperature = aht20.getTemperature();
+float humidity = aht20.getHumidity();
+void AHT20_readTemperature(bool delay = false; int time = 2000;) 
+{
+  Serial.print("T: "); // Mucho más fácil que usar el BMP280, pero quizás menos completo
+  Serial.print(temperature, 2); // Simplemente escribe la temperatura
+  Serial.print(" C\t H: ");
+}
+
+void AHT20_readHumidity(bool delay = false; int time = 2000;)
+{
+  Serial.print("Humidity: ");
+  Serial.print(humidity, 2);
+  Serial.print(" % RH")
+}
 void setup() {
   Serial.begin(9600);
   Serial.println("Iniciando...");
@@ -120,8 +192,7 @@ void setup() {
   Serial.println(F("Buscando AHT20..."));
   if (aht20.begin() == false) {
     Serial.println("No se ha detectado ningún sensor AHT20. Congelando.");
-    while (true)
-      ;
+    while (true);
   }
   // TODO función similar a TSL2591_displayDetails() para AHT20?
 
@@ -162,45 +233,32 @@ void setup() {
 void loop() {
   // AHT20
   // TODO convertir esto en una función AHT20_read()
-  float temperature = aht20.getTemperature(); // Aunque ya hay un temperature en el bmp, este es más fácil de usar
-  float humidity = aht20.getHumidity(); // Este si o sí nos hace falta
-  Serial.print("T: ");
-  Serial.print(temperature, 2);
-  Serial.print(" C\t H: ");
-  Serial.print(humidity, 2);
-  Serial.println("% RH");
-
+  temperature = aht20.getTemperature();  // Aunque ya hay un temperature en el bmp, este es más fácil de usar
+  humidity = aht20.getHumidity();        // Este si o sí nos hace falta
+  AHT20_readTemperature();
+  AHT20_radHumidity();
   // Usando BMP280
   // TODO convertir esto en una función BMP280_read()
   // must call this to wake sensor up and get new measurement data
   // it blocks until measurement is complete
-  if (bmp.takeForcedMeasurement()) {
-    // can now print out the new measurements
-    /************************************/
-    // leer temperatura
-    Serial.print(F("Temperature = "));
-    Serial.print(bmp.readTemperature());
-    Serial.println(" *C");
-    /************************************/
-    // Leer Presión atmosférica
-    Serial.print(F("Pressure = "));
-    Serial.print(bmp.readPressure());
-    Serial.println(" Pa");
-    /*************************************/
-    // Leer altitud aproximada
-    Serial.print(F("Approx altitude = "));
-    Serial.print(bmp.readAltitude(1013.25)); /* Ajustado en tu pronóstico local! */
-    Serial.println(" m");
-    /*************************************/
-    Serial.println();
-  } else {
-    // Mensaje de error
-    Serial.println("Medición forzada ha fallado!");
-  }
+  // can now print out the new measurements
+  // leer temperatura
+  BMP280_readTemperature();
+  // Leer Presión atmosférica
+  BMP280_readPressure();
+  // Leer altitud aproximada
+  BMP280_readAltitude();
+  // Párrafo
+  Serial.println();
+}
+else {
+  // Mensaje de error
+  Serial.println("Medición ha fallado!");
+}
 
-  // TSL2591
-  TSL2591_read();
+// TSL2591
+TSL2591_read();
 
-  // TODO Determinar delay adecuado
-  delay(2000);
+// TODO Determinar delay adecuado
+delay(2000);
 }
