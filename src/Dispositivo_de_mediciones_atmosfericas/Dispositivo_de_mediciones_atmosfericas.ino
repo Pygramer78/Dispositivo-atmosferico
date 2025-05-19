@@ -10,55 +10,50 @@ De Pygramer78[Álvaro](yo) y Sergio-dr(tú)
   AHT20: https://github.com/dvarrel/AHT20
   TSL2591: https://github.com/adafruit/Adafruit_TSL2591_Library
   BMP280: https://github.com/adafruit/Adafruit_BMP280_Library
-  MLX90615: https://github.com/Seeed-Studio/Digital_Infrared_Temperature_Sensor_MLX90615
+  MLX90615: https://github.com/skiselev/MLX90615
 */
 #include <Wire.h>
 #include <AHT20.h>
 #include <Adafruit_BMP280.h>
 #include <Adafruit_TSL2591.h>
-#include <MLX90615.h>
+#include <mlx90615.h>
 
 AHT20 aht20;
 Adafruit_TSL2591 tsl = Adafruit_TSL2591(2591);  // sensorID=2591
 Adafruit_BMP280 bmp;
-#define MLX MLX90615_DefaultAddr
-// OJO! Lo he copiado tal cual del ejemplo 'SingleDevice'
-#define INCLUDED_I2C
+MLX90615 mlx = MLX90615();
 
-#ifdef INCLUDED_I2C
-    #define SDA_PIN SDA   //define the SDA pin
-    #define SCL_PIN SCL   //define the SCL pin
-    SoftI2cMaster i2c(SDA_PIN, SCL_PIN);
-    MLX90615 mlx90615(MLX, &i2c);
-#else // Using Wire
-    MLX90615 mlx90615(MLX, &Wire);
-#endif // INCLUDED_I2C not defined
-// TODO: MLX90615
 
 /*__/ MLX90615 \________________*/
-// OJO !!! Copiado del ejemplo
-void MLX90615_Begin() {
-  while (!Serial); // Only for native USB serial
-    delay(2000); // Additional delay to allow open the terminal to see setup() messages
-    Serial.println("Setup...");
 
-    #ifndef INCLUDED_I2C // If using Wire:
-    Wire.begin();
-    #endif // INCLUDED_I2C not defined
+// Inicializar sensor
+bool MLX90615_begin(void) {
+  int id;
+  mlx.begin();
+  id = mlx.get_id();
+  if (id == -1) {
+    return false;
+  }
+  Serial.print("Sensor ID number = ");
+  Serial.println(mlx.get_id(), HEX);
+  return true;
 }
 
+// Realizar lecturas
 void MLX90615_readObjectTemperature(void) {
-    Serial.print("Object temperature: ");
-    Serial.println(mlx90615.getTemperature(MLX90615_OBJECT_TEMPERATURE));
+  Serial.print("Object temperature: ");
+  Serial.println(mlx.get_ambient_temp());
 }
 
 void MLX90615_readAmbientTemperature(void) {
-    Serial.print("Ambient temperature: ");
-    Serial.println(mlx90615.getTemperature(MLX90615_AMBIENT_TEMPERATURE));
-} 
+  Serial.print("Ambient temperature: ");
+  Serial.println(mlx.get_object_temp());
+}
+
+
 /*__/ TSL2591 \________________*/
 
-// Muestra información sobre el sensor
+// Mostrar información sobre el sensor
 void TSL2591_displayDetails(void) {
   sensor_t sensor;
   tsl.getSensor(&sensor);
@@ -187,6 +182,7 @@ void BMP280_readAltitude(void) {
   }
 }
 
+
 /*__/ AHT20 \________________*/
 
 void AHT20_readTemperature(void) {
@@ -208,10 +204,11 @@ void AHT20_read(void) {
   AHT20_readHumidity();
 }
 
+
 /*__/ Programa principal \________________*/
 
 void setup() {
-  Serial.begin(9600);
+  Serial.begin(19200);
   Serial.println("Iniciando...");
 
   // AHT20
@@ -258,7 +255,16 @@ void setup() {
   TSL2591_displayDetails();
   TSL2591_configure();
   */
-  // TODO MLX90615
+
+  // MLX90615
+  // Serial.println(F("Buscando MLX90615..."));
+  // if (MLX90615_begin()) {
+  //   Serial.println(F("MLX90615 encontrado."));
+  // } else {
+  //   Serial.println(F("MLX90615 no encontrado. Congelando."));
+  //   while (true)
+  //     ;
+  // }
 }
 
 void loop() {
@@ -276,6 +282,10 @@ void loop() {
 
   // TSL2591
   //TSL2591_read();
+
+  // MLX90615
+  // MLX90615_readObjectTemperature();
+  // MLX90615_readAmbientTemperature();
 
   // TODO Determinar delay adecuado
   delay(2000);
