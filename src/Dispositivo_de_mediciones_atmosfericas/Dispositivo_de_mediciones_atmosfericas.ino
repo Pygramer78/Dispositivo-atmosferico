@@ -1,3 +1,4 @@
+/*__/ Declaraciones \________________*/
 /**********************************************************************************
 Este es uno de los códigos fuentes de el dispositivo de mediciones atmosféricas.
 Está especialmente usado para la presión, temperatura, humedad, x.
@@ -20,9 +21,41 @@ De Pygramer78[Álvaro](yo) y Sergio-dr(tú)
 AHT20 aht20;
 Adafruit_TSL2591 tsl = Adafruit_TSL2591(2591);  // sensorID=2591
 Adafruit_BMP280 bmp;
+#define MLX MLX90615_DefaultAddr
+// OJO! Lo he copiado tal cual del ejemplo 'SingleDevice'
+#define INCLUDED_I2C
+
+#ifdef INCLUDED_I2C
+    #define SDA_PIN SDA   //define the SDA pin
+    #define SCL_PIN SCL   //define the SCL pin
+    SoftI2cMaster i2c(SDA_PIN, SCL_PIN);
+    MLX90615 mlx90615(MLX, &i2c);
+#else // Using Wire
+    MLX90615 mlx90615(MLX, &Wire);
+#endif // INCLUDED_I2C not defined
 // TODO: MLX90615
 
+/*__/ MLX90615 \________________*/
+// OJO !!! Copiado del ejemplo
+void MLX90615_Begin() {
+  while (!Serial); // Only for native USB serial
+    delay(2000); // Additional delay to allow open the terminal to see setup() messages
+    Serial.println("Setup...");
 
+    #ifndef INCLUDED_I2C // If using Wire:
+    Wire.begin();
+    #endif // INCLUDED_I2C not defined
+}
+
+void MLX90615_readObjectTemperature(void) {
+    Serial.print("Object temperature: ");
+    Serial.println(mlx90615.getTemperature(MLX90615_OBJECT_TEMPERATURE));
+}
+
+void MLX90615_readAmbientTemperature(void) {
+    Serial.print("Ambient temperature: ");
+    Serial.println(mlx90615.getTemperature(MLX90615_AMBIENT_TEMPERATURE));
+} 
 /*__/ TSL2591 \________________*/
 
 // Muestra información sobre el sensor
@@ -170,6 +203,10 @@ void AHT20_readHumidity(void) {
   Serial.print(" %");
 }
 
+void AHT20_read(void) {
+  AHT20_readTemperature();
+  AHT20_readHumidity();
+}
 
 /*__/ Programa principal \________________*/
 
@@ -226,10 +263,9 @@ void setup() {
 
 void loop() {
   // AHT20
-  // TODO convertir esto en una función AHT20_read()
   /*
   AHT20_readTemperature();
-  AHT20_radHumidity();
+  AHT20_readHumidity();
   */
 
   // BMP280
