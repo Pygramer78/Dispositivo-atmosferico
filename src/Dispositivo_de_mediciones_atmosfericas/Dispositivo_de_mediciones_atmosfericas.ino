@@ -39,6 +39,16 @@ bool MLX90615_begin(void) {
   return true;
 }
 
+void MLX90615_init(void) {
+  Serial.println(F("Buscando MLX90615..."));
+  if (MLX90615_begin()) {
+    Serial.println(F("MLX90615 encontrado."));
+  } else {
+    Serial.println(F("MLX90615 no encontrado. Congelando."));
+    while (true)
+      ;
+  }
+}
 // Realizar lecturas
 void MLX90615_readObjectTemperature(void) {
   Serial.print("Object temperature: ");
@@ -52,6 +62,18 @@ void MLX90615_readAmbientTemperature(void) {
 
 
 /*__/ TSL2591 \________________*/
+
+// Iniciar
+void TSL2591_init(void) {
+  Serial.println(F("Buscando TSL2591..."));
+  if (tsl.begin()) {
+    Serial.println(F("TSL2591 encontrado."));
+  } else {
+    Serial.println(F("TSL2951 no encontrado. Congelando."));
+    while (true)
+      ;
+  }
+}
 
 // Mostrar información sobre el sensor
 void TSL2591_displayDetails(void) {
@@ -141,6 +163,25 @@ void TSL2591_read(void) {
 
 /*__/ BMP280 \________________*/
 
+void BMP280_init(void) {
+  Serial.println(F("Buscando BMP280..."));
+  if (bmp.begin()) {
+    Serial.println(F("BMP280 encontrado."));
+  } else {
+    Serial.println(F("BMP280 no encontrado. Congelando."));
+    while (true)
+      ;
+  }
+}
+
+void BMP280_configure(void) {
+  bmp.setSampling(  //Adafruit_BMP280::MODE_NORMAL,  /* Single measurement, then sleep */
+    Adafruit_BMP280::MODE_FORCED,
+    Adafruit_BMP280::SAMPLING_X2,  /* Temp. oversampling (eq. to 17-bit resolution, see Table 5) */
+    Adafruit_BMP280::SAMPLING_X16, /* Pressure oversampling (eq to 20-bit resolution, see Table 4)*/
+    Adafruit_BMP280::FILTER_X4);   /* IIR filtering */
+}
+
 void BMP280_readTemperature(void) {
   if (bmp.takeForcedMeasurement())  // despertar al sensor
   {
@@ -203,68 +244,39 @@ void AHT20_read(void) {
   AHT20_readTemperature();
   AHT20_readHumidity();
 }
-
+void AHT20_init(void) {
+  Wire.begin();
+  Serial.println(F("Buscando AHT20..."));
+  if (aht20.begin()) {
+    Serial.println("AHT20 encontrado!");
+  } else {
+    Serial.println("AHT20 no encontrado, congelando...");
+    while (true)
+      ;
+  }
+}
 
 /*__/ Programa principal \________________*/
 
 void setup() {
   Serial.begin(19200);
   Serial.println("Iniciando...");
-
-  // AHT20
-  /*
-  Wire.begin();
-  Serial.println(F("Buscando AHT20..."));
-  if (aht20.begin()) {
-    Serial.println(F("AHT20 encontrado."));
-  } else {
-    Serial.println("AHT20 no encontrado. Congelando.");
-    while (true);
-  }
-  */
-  // TODO función similar a TSL2591_displayDetails() para AHT20?
-
+  // AHT20_init();
   // BMP280
-  Serial.println(F("Buscando BMP280..."));
-  if (bmp.begin()) {
-    Serial.println(F("BMP280 encontrado."));
-  } else {
-    Serial.println(F("BMP280 no encontrado. Congelando."));
-    while (true)
-      ;
-  }
-
-  // TODO convertir esto en una función BMP280_configure(), como con TSL2591
+  BMP280_init();
+  BMP280_configure();  // Config en línea 169
   // Valores basados en "Table 7. Use case: handheld device low-power" del datasheet del BMP280
-  bmp.setSampling(Adafruit_BMP280::MODE_FORCED,  /* Single measurement, then sleep */
-                  Adafruit_BMP280::SAMPLING_X2,  /* Temp. oversampling (eq. to 17-bit resolution, see Table 5) */
-                  Adafruit_BMP280::SAMPLING_X16, /* Pressure oversampling (eq to 20-bit resolution, see Table 4)*/
-                  Adafruit_BMP280::FILTER_X4);   /* IIR filtering */
 
 
   // TSL2591
   /*
-  Serial.println(F("Buscando TSL2591..."));
-  if (tsl.begin()) {
-    Serial.println(F("TSL2591 encontrado."));
-  } else {
-    Serial.println(F("TSL2951 no encontrado. Congelando."));
-    while (true)
-      ;
-  }
+  TSL2591_init();
   TSL2591_displayDetails();
   TSL2591_configure();
   */
 
   // MLX90615
-  // Serial.println(F("Buscando MLX90615..."));
-  // if (MLX90615_begin()) {
-  //   Serial.println(F("MLX90615 encontrado."));
-  // } else {
-  //   Serial.println(F("MLX90615 no encontrado. Congelando."));
-  //   while (true)
-  //     ;
-  // }
+  MLX90615_init();
 }
 
 void loop() {
