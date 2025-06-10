@@ -11,13 +11,16 @@ De Pygramer78[Álvaro](yo) y Sergio-dr(tú)
   TSL2591: https://github.com/adafruit/Adafruit_TSL2591_Library
   BMP280: https://github.com/adafruit/Adafruit_BMP280_Library
   MLX90615: https://github.com/skiselev/MLX90615
-  Sensors functions: https://github.com/Pygramer78/arduino-sensors-better
 */
 #include <Wire.h>
 #include <AHT20.h>
 #include <Adafruit_BMP280.h>
 #include <Adafruit_TSL2591.h>
 #include <mlx90615.h>
+#include "better_AHT20"
+#include "better_BMP280"
+#include "better_MLX90615"
+#include "better_TSL2951"
 
 AHT20 aht20;
 Adafruit_TSL2591 tsl = Adafruit_TSL2591(2591);  // sensorID=2591
