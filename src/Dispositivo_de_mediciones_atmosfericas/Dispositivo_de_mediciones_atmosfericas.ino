@@ -17,10 +17,10 @@ De Pygramer78[Álvaro](yo) y Sergio-dr(tú)
 #include <Adafruit_BMP280.h>
 #include <Adafruit_TSL2591.h>
 #include <mlx90615.h>
-#include "better_AHT20"
-#include "better_BMP280"
-#include "better_MLX90615"
-#include "better_TSL2951"
+#include <BetterLibraries/BetterAHT20.h>
+#include <BetterLibraries/BetterBMP280.h>
+#include <BetterLibraries/BetterMLX90615.h>
+#include <BetterLibraries/BetterTSL2951.h>
 
 AHT20 aht20;
 Adafruit_TSL2591 tsl = Adafruit_TSL2591(2591);  // sensorID=2591
