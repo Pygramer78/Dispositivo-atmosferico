@@ -10,6 +10,7 @@ Father&Son project!!!
 
 
 # Librería hecha por mí:
-https://github.com/Pygramer78/arduino-sensors-better
-Te he mandado invitación
-Mete esto en C:\Users\aristarco\Documentos\Arduino\Libraries
+https://github.com/Pygramer78/arduino-sensors-better \
+Te he mandado invitación \
+Mete esto en C:\Users\aristarco\Documentos\Arduino\Libraries \
+O puedes usar el zip dentro de este repositorio
