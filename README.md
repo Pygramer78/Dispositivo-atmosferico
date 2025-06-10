@@ -14,3 +14,11 @@ https://github.com/Pygramer78/arduino-sensors-better \
 Te he mandado invitación \
 Mete esto en C:\Users\aristarco\Documentos\Arduino\Libraries \
 O puedes usar el zip dentro de este repositorio
+# Uso:
+
+```
+#include "better_AHT20"
+#include "better_BMP280"
+#include "better_MLX90615"
+#include "better_TSL2951"
+```
