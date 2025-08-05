@@ -12,6 +12,8 @@ De Pygramer78[Álvaro](yo) y Sergio-dr(tú)
   BMP280: https://github.com/adafruit/Adafruit_BMP280_Library
   MLX90615: https://github.com/skiselev/MLX90615
 */
+// TODO usar oled
+
 #include <Wire.h>
 #include <AHT20.h>
 #include <Adafruit_BMP280.h>
