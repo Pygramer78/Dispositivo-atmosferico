@@ -215,7 +215,9 @@ void BMP280_readTemperature(void) {
     Serial.print(bmp.readTemperature());
     Serial.println(" *C");
     dtostrf(bmp.readTemperature(), 2, 1, temp);
-    String newBuffer = "Temperature = " + temp + " *C";
+    String newBuffer = "Temperature = ";
+    newBuffer += temp;
+    newBuffer += " *C";
     writeAndWait(newBuffer, 3);
   } else {
     // Mensaje de error
@@ -230,9 +232,11 @@ void BMP280_readPressure(void) {
   if (bmp.takeForcedMeasurement()) {  // despertar al sensor
     Serial.print(F("Pressure = "));
     Serial.print(bmp.readPressure());
-    Serial.println(" Pa");
+    Serial.println(" hPa");
     dtostrf(bmp.readPressure(), 4, 2, pa);
-    String newBuffer = "Pressure = " + pa + " Pa";
+    String newBuffer = "Pressure = ";
+    newBuffer += pa;
+    newBuffer += " hPa";
     writeAndWait(newBuffer, 3);
   } else {
     // Mensaje de error
@@ -249,7 +253,9 @@ void BMP280_readAltitude(void) {
     Serial.print(bmp.readAltitude(1013.25));  // TODO indicar valor actual en hPa a nivel del mar
     Serial.println(" m");
     dtostrf(bmp.readAltitude(1013.25), 4, 2, altitude);
-    String newBuffer = "Altitud Aprox = " + altitude + " m";
+    String newBuffer = "Altitud Aprox = ";
+    newBuffer += altitude;
+    newBuffer += " m";
     writeAndWait(newBuffer, 3);
   } else {
     // Mensaje de error
@@ -283,7 +289,9 @@ void AHT20_readTemperature(void) {
   Serial.print(temperature, 2);
   Serial.print(" *C");
   dtostrf(temperature, 3, 1, temp);
-  String newBuffer = "T: " + temp + " *C";
+  String newBuffer = "T: ";
+  newBuffer += temp; 
+  newBuffer += " *C";
   writeAndWait(newBuffer, 3);
 }
 
@@ -293,7 +301,9 @@ void AHT20_readHumidity(void) {
   Serial.print(humidity, 2);
   Serial.print(" %");
   dtostrf(humidity, 2, 1, hum);
-  String newBuffer = "Humidity: " + hum + " %";
+  String newBuffer = "Humidity: ";
+  newBuffer += hum; 
+  newBuffer += " %";
   writeAndWait(newBuffer, 3);
 }
 
