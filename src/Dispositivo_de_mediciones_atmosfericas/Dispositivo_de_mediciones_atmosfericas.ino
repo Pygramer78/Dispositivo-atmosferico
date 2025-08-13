@@ -34,18 +34,24 @@ Adafruit_TSL2591 tsl = Adafruit_TSL2591(2591);  // sensorID=2591
 Adafruit_BMP280 bmp;
 MLX90615 mlx = MLX90615();
 
-/*__/ USELESS STUFF \_____________*/
+
+char temp[] = { "--.-" };
+char pa[] = { "----.--" };
+char altitude[] = { "----.--" };
+char hum[] = { "--.-" };
+/*__/ SOME STUFF \_____________*/
 
 void wait(int seconds) {
   delay(seconds * 1000);
 }
 
-void waitAndWrite(String newBuffer, int seconds) {
+void writeAndWait(String newBuffer, int seconds) {
   u8g2.clearBuffer();
   u8g2.drawStr(0, 10, newBuffer);
   u8g2.sendBuffer();
   wait(seconds);
 }
+
 /*__/ MLX90615 \________________*/
 bool MLX90615_begin(void) {
   int id;
@@ -184,10 +190,10 @@ void BMP280_init(void) {
   Serial.println(F("Buscando BMP280..."));
   if (bmp.begin()) {
     Serial.println(F("BMP280 encontrado."));
-    waitAndWrite("BMP280 encontrado.", 1);
+    writeAndWait("BMP280 encontrado.", 1);
   } else {
     Serial.println(F("BMP280 no encontrado. Congelando."));
-    waitAndWrite("BMP280 no encontrado. Congelando.", 10);
+    writeAndWait("BMP280 no encontrado. Congelando.", 10);
     while (true)
       ;
   }
@@ -208,11 +214,12 @@ void BMP280_readTemperature(void) {
     Serial.print(F("Temperature = "));
     Serial.print(bmp.readTemperature());
     Serial.println(" *C");
-    String newBuffer = "Temperature = " + bmp.readTemperature() + " *C";
-    waitAndWrite(newBuffer, 3);
+    String newBuffer = "Temperature = " + dtostfr(bmp.readTemperature(), 2, 1, temp) + " *C";
+    writeAndWait(newBuffer, 3);
   } else {
     // Mensaje de error
     Serial.println("Medición ha fallado!");
+    writeAndWait("Medición ha fallado!", 10);
     while (true)
       ;
   }
@@ -223,12 +230,12 @@ void BMP280_readPressure(void) {
     Serial.print(F("Pressure = "));
     Serial.print(bmp.readPressure());
     Serial.println(" Pa");
-    String newBuffer = "Pressure = " + bmp.readPressure() + " Pa";
-    waitAndWrite(newBuffer, 3);
+    String newBuffer = "Pressure = " + dtostrf(bmp.readPressure(), 4, 2, pa) + " Pa";
+    writeAndWait(newBuffer, 3);
   } else {
     // Mensaje de error
     Serial.println("Medición ha fallado!");
-    waitAndWrite("Medición ha fallado!", 10);
+    writeAndWait("Medición ha fallado!", 10);
     while (true)
       ;
   }
@@ -239,12 +246,12 @@ void BMP280_readAltitude(void) {
     Serial.print(F("Approx altitude = "));
     Serial.print(bmp.readAltitude(1013.25));  // TODO indicar valor actual en hPa a nivel del mar
     Serial.println(" m");
-    String newBuffer = "Altitud Aprox = " + bmp.readAltitude(1013.25) + " m";
-    waitAndWrite(newBuffer, 3);
+    String newBuffer = "Altitud Aprox = " + dtostrf(bmp.readAltitude(1013.25), 4, 2, altitude) + " m";
+    writeAndWait(newBuffer, 3);
   } else {
     // Mensaje de error
     Serial.println("Medición ha fallado!");
-    waitAndWrite("Medición ha fallado", 10);
+    writeAndWait("Medición ha fallado", 10);
     while (true)
       ;
   }
@@ -258,10 +265,10 @@ void AHT20_init(void) {
   Serial.println(F("Buscando AHT20..."));
   if (aht20.begin()) {
     Serial.println("AHT20 encontrado!");
-    waitAndWrite("AHT20 encontrado", 1);
+    writeAndWait("AHT20 encontrado", 1);
   } else {
     Serial.println("AHT20 no encontrado, congelando...");
-    waitAndWrite("AHT20 no encontrado, congelando", 10);
+    writeAndWait("AHT20 no encontrado, congelando", 10);
     while (true)
       ;
   }
@@ -272,8 +279,8 @@ void AHT20_readTemperature(void) {
   Serial.print("T: ");
   Serial.print(temperature, 2);
   Serial.print(" *C");
-  String newBuffer = "T: " + temperature + " *C";
-  waitAndWrite(newBuffer, 3);
+  String newBuffer = "T: " + dtostrf(temperature, 3, 1, temp) + " *C";
+  writeAndWait(newBuffer, 3);
 }
 
 void AHT20_readHumidity(void) {
@@ -281,8 +288,8 @@ void AHT20_readHumidity(void) {
   Serial.print("Humidity: ");
   Serial.print(humidity, 2);
   Serial.print(" %");
-  String newBuffer = "Humidity: " + humidity + " %";
-  waitAndWrite(newBuffer, 3);
+  String newBuffer = "Humidity: " + dtostrf(humidity, 2, 1, hum) + " %";
+  writeAndWait(newBuffer, 3);
 }
 
 void AHT20_read(void) {
@@ -293,10 +300,10 @@ void AHT20_read(void) {
 
 void setup() {
   Serial.begin(19200);
-  Serial.print("Inicializando...")
+  Serial.print("Inicializando...");
   u8g2.begin();
   u8g2.setFont(u8g2_font_ncenB08_tr); // TODO mirar si hay más Fonts
-  waitAndWrite("Inicializando...", 1);
+  writeAndWait("Inicializando...", 1);
   AHT20_init();
   // BMP280
   BMP280_init();
