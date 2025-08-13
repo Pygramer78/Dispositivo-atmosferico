@@ -12,17 +12,40 @@ De Pygramer78[Álvaro](yo) y Sergio-dr(tú)
   BMP280: https://github.com/adafruit/Adafruit_BMP280_Library
   MLX90615: https://github.com/skiselev/MLX90615
 */
+#include <Arduino.h>
 #include <Wire.h>
 #include <AHT20.h>
 #include <Adafruit_BMP280.h>
 #include <Adafruit_TSL2591.h>
 #include <mlx90615.h>
+#include <U8g2lib.h>
+
+#ifdef U8X8_HAVE_HW_SPI
+#include <SPI.h>
+#endif
+#ifdef U8X8_HAVE_HW_I2C
+#include <Wire.h>
+#endif
+
+U8G2_SSD1306_128X64_NONAME_2_HW_I2C u8g2(U8G2_R0, /* reset=*/ U8X8_PIN_NONE);
 
 AHT20 aht20;
 Adafruit_TSL2591 tsl = Adafruit_TSL2591(2591);  // sensorID=2591
 Adafruit_BMP280 bmp;
 MLX90615 mlx = MLX90615();
 
+/*__/ USELESS STUFF \_____________*/
+
+void wait(int seconds) {
+  delay(seconds * 1000);
+}
+
+void waitAndWrite(String newBuffer, int seconds) {
+  u8g2.clearBuffer();
+  u8g2.drawStr(0, 10, newBuffer);
+  u8g2.sendBuffer();
+  wait(seconds);
+}
 /*__/ MLX90615 \________________*/
 bool MLX90615_begin(void) {
   int id;
@@ -161,8 +184,10 @@ void BMP280_init(void) {
   Serial.println(F("Buscando BMP280..."));
   if (bmp.begin()) {
     Serial.println(F("BMP280 encontrado."));
+    waitAndWrite("BMP280 encontrado.", 1);
   } else {
     Serial.println(F("BMP280 no encontrado. Congelando."));
+    waitAndWrite("BMP280 no encontrado. Congelando.", 10);
     while (true)
       ;
   }
@@ -196,9 +221,12 @@ void BMP280_readPressure(void) {
     Serial.print(F("Pressure = "));
     Serial.print(bmp.readPressure());
     Serial.println(" Pa");
+    String newBuffer = "Pressure = " + bmp.readPressure() + " Pa";
+    waitAndWrite(newBuffer, 3);
   } else {
     // Mensaje de error
     Serial.println("Medición ha fallado!");
+    waitAndWrite("Medición ha fallado!", 10);
     while (true)
       ;
   }
@@ -209,9 +237,12 @@ void BMP280_readAltitude(void) {
     Serial.print(F("Approx altitude = "));
     Serial.print(bmp.readAltitude(1013.25));  // TODO indicar valor actual en hPa a nivel del mar
     Serial.println(" m");
+    String newBuffer = "Altitud Aprox = " + bmp.readAltitude(1013.25) + " m";
+    waitAndWrite(newBuffer, 3);
   } else {
     // Mensaje de error
     Serial.println("Medición ha fallado!");
+    waitAndWrite("Medición ha fallado", 10);
     while (true)
       ;
   }
@@ -225,8 +256,10 @@ void AHT20_init(void) {
   Serial.println(F("Buscando AHT20..."));
   if (aht20.begin()) {
     Serial.println("AHT20 encontrado!");
+    waitAndWrite("AHT20 encontrado", 1);
   } else {
     Serial.println("AHT20 no encontrado, congelando...");
+    waitAndWrite("AHT20 no encontrado, congelando", 10);
     while (true)
       ;
   }
@@ -237,6 +270,8 @@ void AHT20_readTemperature(void) {
   Serial.print("T: ");
   Serial.print(temperature, 2);
   Serial.print(" *C");
+  String newBuffer = "T: " + temperature + " *C";
+  waitAndWrite(newBuffer, 3);
 }
 
 void AHT20_readHumidity(void) {
@@ -244,6 +279,8 @@ void AHT20_readHumidity(void) {
   Serial.print("Humidity: ");
   Serial.print(humidity, 2);
   Serial.print(" %");
+  String newBuffer = "Humidity: " + humidity + " %";
+  waitAndWrite(newBuffer, 3);
 }
 
 void AHT20_read(void) {
@@ -254,31 +291,31 @@ void AHT20_read(void) {
 
 void setup() {
   Serial.begin(19200);
-  Serial.println("Iniciando...");
-  // AHT20_init();
+  Serial.print("Inicializando...")
+  u8g2.begin();
+  u8g2.setFont(u8g2_font_ncenB08_tr); // TODO mirar si hay más Fonts
+  waitAndWrite("Inicializando...", 1);
+  AHT20_init();
   // BMP280
   BMP280_init();
   BMP280_configure();  // Config en línea 169
   // Valores basados en "Table 7. Use case: handheld device low-power" del datasheet del BMP280
 
-
+  // TODO buscar otro sensor de luz
   // TSL2591
-  /*
   TSL2591_init();
   TSL2591_displayDetails();
   TSL2591_configure();
-  */
 
   // MLX90615
   MLX90615_init();
 }
 
 void loop() {
+  u8g2.clearBuffer();
   // AHT20
-  /*
   AHT20_readTemperature();
   AHT20_readHumidity();
-  */
 
   // BMP280
   BMP280_readTemperature();
@@ -287,12 +324,14 @@ void loop() {
   Serial.println();
 
   // TSL2591
-  //TSL2591_read();
+  TSL2591_read();
 
+  // TODO cambiar por MLX90614
   // MLX90615
-  // MLX90615_readObjectTemperature();
-  // MLX90615_readAmbientTemperature();
+  MLX90615_readObjectTemperature();
+  MLX90615_readAmbientTemperature();
 
   // TODO Determinar delay adecuado
-  delay(2000);
+  wait(2);
+  u8g2.clearBuffer();
 }
