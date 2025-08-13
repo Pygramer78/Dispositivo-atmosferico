@@ -47,7 +47,7 @@ void wait(int seconds) {
 
 void writeAndWait(String newBuffer, int seconds) {
   u8g2.clearBuffer();
-  u8g2.drawStr(0, 10, newBuffer);
+  u8g2.drawStr(0, 10, newBuffer.c_str());
   u8g2.sendBuffer();
   wait(seconds);
 }
@@ -214,7 +214,8 @@ void BMP280_readTemperature(void) {
     Serial.print(F("Temperature = "));
     Serial.print(bmp.readTemperature());
     Serial.println(" *C");
-    String newBuffer = "Temperature = " + dtostfr(bmp.readTemperature(), 2, 1, temp) + " *C";
+    dtostrf(bmp.readTemperature(), 2, 1, temp);
+    String newBuffer = "Temperature = " + temp + " *C";
     writeAndWait(newBuffer, 3);
   } else {
     // Mensaje de error
@@ -230,7 +231,8 @@ void BMP280_readPressure(void) {
     Serial.print(F("Pressure = "));
     Serial.print(bmp.readPressure());
     Serial.println(" Pa");
-    String newBuffer = "Pressure = " + dtostrf(bmp.readPressure(), 4, 2, pa) + " Pa";
+    dtostrf(bmp.readPressure(), 4, 2, pa);
+    String newBuffer = "Pressure = " + pa + " Pa";
     writeAndWait(newBuffer, 3);
   } else {
     // Mensaje de error
@@ -246,7 +248,8 @@ void BMP280_readAltitude(void) {
     Serial.print(F("Approx altitude = "));
     Serial.print(bmp.readAltitude(1013.25));  // TODO indicar valor actual en hPa a nivel del mar
     Serial.println(" m");
-    String newBuffer = "Altitud Aprox = " + dtostrf(bmp.readAltitude(1013.25), 4, 2, altitude) + " m";
+    dtostrf(bmp.readAltitude(1013.25), 4, 2, altitude);
+    String newBuffer = "Altitud Aprox = " + altitude + " m";
     writeAndWait(newBuffer, 3);
   } else {
     // Mensaje de error
@@ -279,7 +282,8 @@ void AHT20_readTemperature(void) {
   Serial.print("T: ");
   Serial.print(temperature, 2);
   Serial.print(" *C");
-  String newBuffer = "T: " + dtostrf(temperature, 3, 1, temp) + " *C";
+  dtostrf(temperature, 3, 1, temp);
+  String newBuffer = "T: " + temp + " *C";
   writeAndWait(newBuffer, 3);
 }
 
@@ -288,7 +292,8 @@ void AHT20_readHumidity(void) {
   Serial.print("Humidity: ");
   Serial.print(humidity, 2);
   Serial.print(" %");
-  String newBuffer = "Humidity: " + dtostrf(humidity, 2, 1, hum) + " %";
+  dtostrf(humidity, 2, 1, hum);
+  String newBuffer = "Humidity: " + hum + " %";
   writeAndWait(newBuffer, 3);
 }
 
