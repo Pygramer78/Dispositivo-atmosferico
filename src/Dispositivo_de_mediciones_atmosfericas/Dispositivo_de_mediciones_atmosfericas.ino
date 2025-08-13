@@ -208,6 +208,8 @@ void BMP280_readTemperature(void) {
     Serial.print(F("Temperature = "));
     Serial.print(bmp.readTemperature());
     Serial.println(" *C");
+    String newBuffer = "Temperature = " + bmp.readTemperature() + " *C";
+    waitAndWrite(newBuffer, 3);
   } else {
     // Mensaje de error
     Serial.println("Medición ha fallado!");
