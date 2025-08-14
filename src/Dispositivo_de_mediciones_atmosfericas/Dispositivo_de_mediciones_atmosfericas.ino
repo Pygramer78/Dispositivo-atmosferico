@@ -34,11 +34,23 @@ Adafruit_TSL2591 tsl = Adafruit_TSL2591(2591);  // sensorID=2591
 Adafruit_BMP280 bmp;
 MLX90615 mlx = MLX90615();
 
-
+// Buffers for u8g2.drawStr(0, 10, buffer.c_str)
 char temp[] = { "--.-" };
 char pa[] = { "----.--" };
 char altitude[] = { "----.--" };
 char hum[] = { "--.-" };
+
+// Button pins
+const int k1 = 19;
+const int k2 = 18;
+const int k3 = 5;
+const int k4 = 17;
+int k1p;
+int k2p;
+int k3p;
+int k4p;
+
+
 /*__/ SOME STUFF \_____________*/
 
 void wait(int seconds) {
@@ -53,6 +65,7 @@ void writeAndWait(String newBuffer, int seconds) {
 }
 
 /*__/ MLX90615 \________________*/
+// MLX90615 descartado, cambiando por MLX90614 (Más preciso)
 bool MLX90615_begin(void) {
   int id;
   mlx.begin();
@@ -86,6 +99,10 @@ void MLX90615_readAmbientTemperature(void) {
   Serial.println(mlx.get_object_temp());
 }
 
+void MLX90615_read(void) {
+  MLX90615_readObjectTemperature();
+  MLX90615_readAmbientTemperature();
+}
 /*__/ TSL2591 \________________*/
 
 // Iniciar
@@ -319,6 +336,12 @@ void setup() {
   u8g2.begin();
   u8g2.setFont(u8g2_font_ncenB08_tr); // TODO mirar si hay más Fonts
   writeAndWait("Inicializando...", 1);
+  // Botones
+  pinMode(k1, INPUT);
+  pinMode(k2, INPUT);
+  pinMode(k3, INPUT);
+  pinMode(k4, INPUT);
+  
   AHT20_init();
   // BMP280
   BMP280_init();
@@ -336,26 +359,29 @@ void setup() {
 }
 
 void loop() {
+  k1p = digitalRead(k1);
+  k2p = digitalRead(k2);
+  k3p = digitalRead(k3);
+  k4p = digitalRead(k4);
   u8g2.clearBuffer();
-  // AHT20
-  AHT20_readTemperature();
-  AHT20_readHumidity();
+  u8g2.drawStr(0, 10, "Pulsa un boton");
+  if (k1p == HIGH) {
+    BMP280_readPressure();
+    BMP280_readTemperature();
+    BMP280_readAltitude();
+  }
 
-  // BMP280
-  BMP280_readTemperature();
-  BMP280_readPressure();
-  BMP280_readAltitude();
-  Serial.println();
+  if (k2p == HIGH) {
+    AHT20_read();
+  }
 
-  // TSL2591
-  TSL2591_read();
+  // Sensores que vamos a cambiar:
 
-  // TODO cambiar por MLX90614
-  // MLX90615
-  MLX90615_readObjectTemperature();
-  MLX90615_readAmbientTemperature();
+  if (k3p == HIGH) {
+    TSL2591_read(); // Como lo vamos a cambiar solo se puede leer por puerto serie
+  }
 
-  // TODO Determinar delay adecuado
-  wait(2);
-  u8g2.clearBuffer();
+  if (k4p == HIGH) {
+    MLX90615_read(); // Lo mismo con este
+  }
 }
