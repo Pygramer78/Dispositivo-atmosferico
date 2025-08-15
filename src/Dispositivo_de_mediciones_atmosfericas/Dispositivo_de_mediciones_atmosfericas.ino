@@ -365,23 +365,24 @@ void loop() {
   k4p = digitalRead(k4);
   u8g2.clearBuffer();
   u8g2.drawStr(0, 10, "Pulsa un boton");
-  if (k1p == HIGH) {
+  u8g2.sendBuffer();
+  if (k1p == LOW) {
     BMP280_readPressure();
     BMP280_readTemperature();
     BMP280_readAltitude();
   }
 
-  if (k2p == HIGH) {
+  if (k2p == LOW) {
     AHT20_read();
   }
 
   // Sensores que vamos a cambiar:
 
-  if (k3p == HIGH) {
+  if (k3p == LOW) {
     TSL2591_read(); // Como lo vamos a cambiar solo se puede leer por puerto serie
   }
 
-  if (k4p == HIGH) {
+  if (k4p == LOW) {
     MLX90615_read(); // Lo mismo con este
   }
 }
