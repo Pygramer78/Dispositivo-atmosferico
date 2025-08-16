@@ -13,11 +13,10 @@ De Pygramer78[Álvaro](yo) y Sergio-dr(tú)
   MLX90615: https://github.com/skiselev/MLX90615
 */
 #include <Arduino.h>
-#include <Wire.h>
 #include <AHT20.h>
 #include <Adafruit_BMP280.h>
 #include <Adafruit_TSL2591.h>
-#include <mlx90615.h>
+#include <Adafruit_MLX90614.h>
 #include <U8g2lib.h>
 
 #ifdef U8X8_HAVE_HW_SPI
@@ -32,14 +31,14 @@ U8G2_SSD1306_128X64_NONAME_2_HW_I2C u8g2(U8G2_R0, /* reset=*/ U8X8_PIN_NONE);
 AHT20 aht20;
 Adafruit_TSL2591 tsl = Adafruit_TSL2591(2591);  // sensorID=2591
 Adafruit_BMP280 bmp;
-MLX90615 mlx = MLX90615();
-
+Adafruit_MLX90614 mlx = Adafruit_MLX90614();
+// MLX90615 mlx90615 = MLx90615();
 // Buffers for u8g2.drawStr(0, 10, buffer.c_str)
 char temp[] = { "--.-" };
 char pa[] = { "----.--" };
 char altitude[] = { "----.--" };
 char hum[] = { "--.-" };
-
+char objTemp[] = { "--.-" };
 // Button pins
 const int k1 = 19;
 const int k2 = 18;
@@ -50,6 +49,14 @@ int k2p;
 int k3p;
 int k4p;
 
+// Emissivity (MLX90614)
+const double emissivity = 0.95; // TODO determinar Emissivity
+/*
+TODO:
+En la librería de MLX90614 hay una función que se llama readEmissivity()
+lo que hace es leer la 'emisividad'. No se si esto renta o no vale la pena, o si es mejor hacer una variable
+El TODO es para determinar Emisivity.
+*/
 
 /*__/ SOME STUFF \_____________*/
 
@@ -64,17 +71,16 @@ void writeAndWait(String newBuffer, int seconds) {
   wait(seconds);
 }
 
-/*__/ MLX90615 \________________*/
-// MLX90615 descartado, cambiando por MLX90614 (Más preciso)
+/*__/ MLX90615 \________________
 bool MLX90615_begin(void) {
   int id;
-  mlx.begin();
+  mlx90614.begin();
   id = mlx.get_id();
   if (id == -1) {
     return false;
   }
   Serial.print("Sensor ID number = ");
-  Serial.println(mlx.get_id(), HEX);
+  Serial.println(mlx90615.get_id(), HEX);
   return true;
 }
 
@@ -91,18 +97,57 @@ void MLX90615_init(void) {
 // Realizar lecturas
 void MLX90615_readObjectTemperature(void) {
   Serial.print("Object temperature: ");
-  Serial.println(mlx.get_ambient_temp());
+  Serial.println(mlx90615.get_ambient_temp());
 }
 
 void MLX90615_readAmbientTemperature(void) {
   Serial.print("Ambient temperature: ");
-  Serial.println(mlx.get_object_temp());
+  Serial.println(mlx90615.get_object_temp());
 }
 
 void MLX90615_read(void) {
   MLX90615_readObjectTemperature();
   MLX90615_readAmbientTemperature();
+} */
+/*__/ MLX90614 \_______________*/
+void MLX90614_init(void) {
+  Serial.println(F("Buscando MLX90614"));
+  writeAndWait("Buscando MLX90614", 2);
+  if (!mlx.begin()) {
+    Serial.println("Error al conectar con el sensor");
+    writeAndWrite("Error al conectar con el sensor", 10);
+    while (true);
+  };
+  mlx.writeEmissivity(emissivity); //  TODO investigar más a fondo esto
 }
+
+void MLX90614_readObjectTemperature(void) {
+  Serial.print("Object Temperature = ");
+  Serial.print(mlx.readObjectTempC());
+  Serial.print(" *C");
+  dtostrf(mlx.readObjectTempC(), 2, 1, objTemp);
+  String newBuffer = "Obj.Temperature = ";
+  newBuffer += objTemp;
+  newBuffer += " *C";
+  writeAndWrite(newBuffer, 3);
+}
+
+void MLX90614_readAmbientTemperature(void) {
+  Serial.print("Ambient Temperature = ");
+  Serial.print(mlx.readAmbientTempC());
+  Serial.print(" *C");
+  dtostfr(mlx.readAmbientTempC(), 2, 1, temp);
+  String newBuffer = "Ambient Temp. = ";
+  newBuffer += temp;
+  newBuffer += " *C";
+  writeAndWait(newBuffer, 3);
+}
+
+void MLX90614_read(void) {
+  MLX90614_readObjectTemperature();
+  MLX90614_readAmbientTemperature();
+}
+
 /*__/ TSL2591 \________________*/
 
 // Iniciar
