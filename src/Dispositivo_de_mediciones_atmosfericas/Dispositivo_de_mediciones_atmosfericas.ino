@@ -10,7 +10,8 @@ De Pygramer78[Álvaro](yo) y Sergio-dr(tú)
   AHT20: https://github.com/dvarrel/AHT20
   TSL2591: https://github.com/adafruit/Adafruit_TSL2591_Library
   BMP280: https://github.com/adafruit/Adafruit_BMP280_Library
-  MLX90615: https://github.com/skiselev/MLX90615
+  MLX90615: https://github.com/skiselev/MLX90615 (Deprecated | Obsoleto)
+  MLX90614: https://github.com/adafruit/Adafruit-MLX90614-Library
 */
 #include <Arduino.h>
 #include <AHT20.h>
@@ -39,6 +40,7 @@ char pa[] = { "----.--" };
 char altitude[] = { "----.--" };
 char hum[] = { "--.-" };
 char objTemp[] = { "--.-" };
+char lux[] = { "---.--" };
 // Button pins
 const int k1 = 19;
 const int k2 = 18;
@@ -231,20 +233,31 @@ void TSL2591_read(void) {
   uint16_t ir, full;
   ir = lum >> 16;
   full = lum & 0xFFFF;
+  String newBuffer;
   Serial.print(F("[ "));
   Serial.print(millis());
   Serial.print(F(" ms ] "));
   Serial.print(F("IR: "));
+  newBuffer = "IR: ";
   Serial.print(ir);
+  newBuffer += String(ir);
   Serial.print(F("  "));
   Serial.print(F("Full: "));
+  newBuffer += "Full: ";
   Serial.print(full);
+  newBuffer += String(full);
   Serial.print(F("  "));
   Serial.print(F("Visible: "));
+  newBuffer += "Visible: ";
   Serial.print(full - ir);
+  newBuffer += String(full- ir);
+  waitAndWrite(newBuffer, 2);
   Serial.print(F("  "));
   Serial.print(F("Lux: "));
+  newBuffer = "Lux: ";
   Serial.println(tsl.calculateLux(full, ir), 6);
+  dtostrf(tsl.calculateLux(full, ir), 4, 2, lux);
+  newBuffer += lux;
 }
 
 /*__/ BMP280 \________________*/
