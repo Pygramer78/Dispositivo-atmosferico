@@ -117,7 +117,7 @@ void MLX90614_init(void) {
   writeAndWait("Buscando MLX90614", 2);
   if (!mlx.begin()) {
     Serial.println("Error al conectar con el sensor");
-    writeAndWrite("Error al conectar con el sensor", 10);
+    writeAndWait("Error al conectar con el sensor", 10);
     while (true);
   };
   mlx.writeEmissivity(emissivity); //  TODO investigar más a fondo esto
@@ -131,16 +131,16 @@ void MLX90614_readObjectTemperature(void) {
   String newBuffer = "Obj.Temperature = ";
   newBuffer += objTemp;
   newBuffer += " *C";
-  writeAndWrite(newBuffer, 3);
+  writeAndWait(newBuffer, 3);
 }
 
 void MLX90614_readAmbientTemperature(void) {
   Serial.print("Ambient Temperature = ");
   Serial.print(mlx.readAmbientTempC());
   Serial.print(" *C");
-  dtostfr(mlx.readAmbientTempC(), 2, 1, temp);
+  //dtostrf(mlx.readAmbientTempC(), 2, 1, temp);
   String newBuffer = "Ambient Temp. = ";
-  newBuffer += temp;
+  newBuffer += String(mlx.readAmbientTempC());
   newBuffer += " *C";
   writeAndWait(newBuffer, 3);
 }
@@ -243,21 +243,22 @@ void TSL2591_read(void) {
   newBuffer += String(ir);
   Serial.print(F("  "));
   Serial.print(F("Full: "));
-  newBuffer += "Full: ";
+  newBuffer += " Full: ";
   Serial.print(full);
   newBuffer += String(full);
+  writeAndWait(newBuffer, 2);
   Serial.print(F("  "));
   Serial.print(F("Visible: "));
-  newBuffer += "Visible: ";
+  newBuffer = "Visible: ";
   Serial.print(full - ir);
-  newBuffer += String(full- ir);
-  waitAndWrite(newBuffer, 2);
+  newBuffer += String(full - ir);
   Serial.print(F("  "));
   Serial.print(F("Lux: "));
-  newBuffer = "Lux: ";
+  newBuffer += " Lux: ";
   Serial.println(tsl.calculateLux(full, ir), 6);
-  dtostrf(tsl.calculateLux(full, ir), 4, 2, lux);
+  dtostrf(tsl.calculateLux(full, ir), 4, 1, lux);
   newBuffer += lux;
+  writeAndWait(newBuffer, 2);
 }
 
 /*__/ BMP280 \________________*/
@@ -413,7 +414,7 @@ void setup() {
   TSL2591_configure();
 
   // MLX90615
-  MLX90615_init();
+  MLX90614_init();
 }
 
 void loop() {
@@ -437,10 +438,10 @@ void loop() {
   // Sensores que vamos a cambiar:
 
   if (k3p == LOW) {
-    TSL2591_read(); // Como lo vamos a cambiar solo se puede leer por puerto serie
+    TSL2591_read();
   }
 
   if (k4p == LOW) {
-    MLX90615_read(); // Lo mismo con este
+    MLX90614_read();
   }
 }
