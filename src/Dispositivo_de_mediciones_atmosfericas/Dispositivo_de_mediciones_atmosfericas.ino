@@ -20,12 +20,12 @@ De Pygramer78[Álvaro](yo) y Sergio-dr(tú)
 #include <Adafruit_MLX90614.h>
 #include <U8g2lib.h>
 
-#ifdef U8X8_HAVE_HW_SPI
-#include <SPI.h>
-#endif
-#ifdef U8X8_HAVE_HW_I2C
-#include <Wire.h>
-#endif
+// #ifdef U8X8_HAVE_HW_SPI
+// #include <SPI.h>
+// #endif
+// #ifdef U8X8_HAVE_HW_I2C
+// #include <Wire.h>
+// #endif
 
 U8G2_SSD1306_128X64_NONAME_2_HW_I2C u8g2(U8G2_R0, /* reset=*/ U8X8_PIN_NONE);
 
@@ -51,14 +51,6 @@ int k2p;
 int k3p;
 int k4p;
 
-// Emissivity (MLX90614)
-const double emissivity = 0.95; // TODO determinar Emissivity
-/*
-TODO:
-En la librería de MLX90614 hay una función que se llama readEmissivity()
-lo que hace es leer la 'emisividad'. No se si esto renta o no vale la pena, o si es mejor hacer una variable
-El TODO es para determinar Emisivity.
-*/
 
 /*__/ SOME STUFF \_____________*/
 
@@ -111,6 +103,7 @@ void MLX90615_read(void) {
   MLX90615_readObjectTemperature();
   MLX90615_readAmbientTemperature();
 } */
+
 /*__/ MLX90614 \_______________*/
 void MLX90614_init(void) {
   Serial.println(F("Buscando MLX90614"));
@@ -120,14 +113,15 @@ void MLX90614_init(void) {
     writeAndWait("Error al conectar con el sensor", 10);
     while (true);
   };
-  mlx.writeEmissivity(emissivity); //  TODO investigar más a fondo esto
+  Serial.println(F("MLX90614 encontrado."));
 }
 
 void MLX90614_readObjectTemperature(void) {
+  float mlxObjC = mlx.readObjectTempC();
   Serial.print("Object Temperature = ");
-  Serial.print(mlx.readObjectTempC());
+  Serial.print(mlxObjC);
   Serial.print(" *C");
-  dtostrf(mlx.readObjectTempC(), 2, 1, objTemp);
+  dtostrf(mlxObjC, 2, 1, objTemp);
   String newBuffer = "Obj.Temperature = ";
   newBuffer += objTemp;
   newBuffer += " *C";
@@ -135,12 +129,13 @@ void MLX90614_readObjectTemperature(void) {
 }
 
 void MLX90614_readAmbientTemperature(void) {
+  float mlxAmbC = mlx.readAmbientTempC();
   Serial.print("Ambient Temperature = ");
-  Serial.print(mlx.readAmbientTempC());
+  Serial.print(mlxAmbC);
   Serial.print(" *C");
   //dtostrf(mlx.readAmbientTempC(), 2, 1, temp);
   String newBuffer = "Ambient Temp. = ";
-  newBuffer += String(mlx.readAmbientTempC());
+  newBuffer += String(mlxAmbC);
   newBuffer += " *C";
   writeAndWait(newBuffer, 3);
 }
@@ -391,10 +386,14 @@ void AHT20_read(void) {
 
 void setup() {
   Serial.begin(19200);
-  Serial.print("Inicializando...");
+  Serial.println("Inicializando...");
+
   u8g2.begin();
+  u8g2.setBusClock(100000);  // Necesario para evitar error "i2c.master: I2C hardware NACK detected" con MLX90614
+                             // Ver https://github.com/olikraus/u8g2/issues/1330#issuecomment-723805124
   u8g2.setFont(u8g2_font_ncenB08_tr); // TODO mirar si hay más Fonts
   writeAndWait("Inicializando...", 1);
+
   // Botones
   pinMode(k1, INPUT);
   pinMode(k2, INPUT);
